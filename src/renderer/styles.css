@@ -112,10 +112,16 @@ header {
 .empty {
   display: grid;
   place-items: center;
+  align-content: center;
+  gap: 18px;
   font-size: clamp(38px, 6vw, 68px);
   font-weight: 750;
   letter-spacing: -2px;
   color: #f2f4fa;
+}
+.empty-icon {
+  width: clamp(72px, 12vw, 132px);
+  height: auto;
 }
 .messages {
   overflow-y: auto;

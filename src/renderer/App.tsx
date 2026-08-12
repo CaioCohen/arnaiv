@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import mainIcon from "../assets/main-icon.png";
 import type { ChatMessage, ChatSession, SessionSummary } from "../shared/types";
 import { ChatInput } from "./components/ChatInput";
 import { Messages } from "./components/Messages";
@@ -217,7 +218,10 @@ function ElectronApp({ api }: { api: typeof window.arnAIv }): JSX.Element {
           {session?.messages.length ? (
             <Messages messages={session.messages} generating={generating} />
           ) : (
-            <div className="empty">ArnAIv</div>
+            <div className="empty">
+              <span>ArnAIv</span>
+              <img className="empty-icon" src={mainIcon} alt="ArnAIv logo" />
+            </div>
           )}
           <ChatInput
             disabled={generating}
