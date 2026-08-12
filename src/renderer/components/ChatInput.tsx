@@ -1,14 +1,21 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface ChatInputProps {
   disabled: boolean;
+  focusRequest: number;
   onFocus: () => void;
   onSend: (content: string) => void;
 }
 
-export function ChatInput({ disabled, onFocus, onSend }: ChatInputProps): JSX.Element {
+export function ChatInput({ disabled, focusRequest, onFocus, onSend }: ChatInputProps): JSX.Element {
   const [value, setValue] = useState('');
   const ref = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (focusRequest && !disabled) {
+      ref.current?.focus();
+    }
+  }, [disabled, focusRequest]);
 
   const submit = (): void => {
     const content = value.trim();
