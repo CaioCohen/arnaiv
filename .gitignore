@@ -1,0 +1,8 @@
+node_modules/
+dist/
+dist-renderer/
+.env
+coverage/
+.agents/
+skills-lock.json
+spec.md
