@@ -14,6 +14,12 @@ let sessions: SessionService;
 let isGenerating = false;
 
 function messageFor(error: unknown): string { return error instanceof Error && error.message.includes('OPENAI_API_KEY') ? 'OpenAI is not configured. Add OPENAI_API_KEY to your .env file.' : 'ArnAIv could not complete that response. Please try again.'; }
+function chatRequest(value: unknown): ChatSendRequest {
+  if (!value || typeof value !== 'object') throw new Error('Invalid chat request.');
+  const request = value as Partial<ChatSendRequest>;
+  if (typeof request.sessionId !== 'string' || typeof request.content !== 'string') throw new Error('Invalid chat request.');
+  return { sessionId: request.sessionId, content: request.content };
+}
 function createWindow(): void {
   const window = new BrowserWindow({ width: 1180, height: 760, minWidth: 860, minHeight: 560, webPreferences: { preload: path.join(__dirname, '../preload/preload.cjs'), contextIsolation: true, nodeIntegration: false } });
   if (app.isPackaged) void window.loadFile(path.join(__dirname, '../../dist-renderer/index.html')); else void window.loadURL('http://127.0.0.1:5173');
@@ -23,7 +29,8 @@ function registerIpc(): void {
   ipcMain.handle('sessions:get', (_event, id: string) => sessions.getSession(id));
   ipcMain.handle('sessions:create', () => sessions.createSession());
   ipcMain.handle('sessions:delete', (_event, id: string) => sessions.deleteSession(id));
-  ipcMain.handle('chat:send', (event, request: ChatSendRequest) => {
+  ipcMain.handle('chat:send', (event, value: unknown) => {
+    const request = chatRequest(value);
     if (isGenerating) throw new Error('A response is already being generated.');
     const content = request.content.trim(); if (!content) throw new Error('Please enter a message.');
     isGenerating = true;

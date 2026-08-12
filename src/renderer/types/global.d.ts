@@ -1,3 +1,9 @@
 import type { ArnAIvApi } from '../../shared/types';
-declare global { interface Window { arnAIv: ArnAIvApi; } }
+
+declare global {
+  interface Window {
+    arnAIv: ArnAIvApi;
+  }
+}
+
 export {};
