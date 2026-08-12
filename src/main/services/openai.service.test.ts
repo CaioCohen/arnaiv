@@ -17,7 +17,7 @@ describe('OpenAIService', () => {
     const chunks: string[] = [];
 
     await service.stream(
-      { messages, systemPrompt: 'Be kind', model: 'test-model' },
+      { messages, systemPrompt: 'Be kind', model: 'test-model', reasoningEffort: 'high' },
       (chunk) => chunks.push(chunk),
     );
 
@@ -25,6 +25,7 @@ describe('OpenAIService', () => {
       expect.objectContaining({
         model: 'test-model',
         stream: true,
+        reasoning_effort: 'high',
         messages: [
           { role: 'system', content: 'Be kind' },
           { role: 'user', content: 'Hello' },

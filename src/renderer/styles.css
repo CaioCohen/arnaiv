@@ -189,6 +189,72 @@ textarea:focus {
   padding: 0 20px;
   font-weight: 700;
 }
+.reasoning-selector {
+  position: relative;
+  min-width: 132px;
+  align-self: stretch;
+}
+.composer .reasoning-trigger {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  color: #f2f4fa;
+  background: #20212a;
+  border: 1px solid #5a6075;
+  border-radius: 12px;
+  text-align: left;
+  font-weight: 650;
+}
+.composer .reasoning-trigger:hover,
+.composer .reasoning-trigger:focus-visible {
+  background: #292b37;
+  border-color: #8790ad;
+  outline: none;
+}
+.reasoning-selector img {
+  width: 21px;
+  height: 21px;
+  object-fit: contain;
+}
+.reasoning-chevron {
+  margin-left: auto;
+  font-size: 20px;
+  line-height: 1;
+}
+.reasoning-menu {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  z-index: 2;
+  width: 100%;
+  padding: 5px;
+  background: #252733;
+  border: 1px solid #5a6075;
+  border-radius: 10px;
+  box-shadow: 0 12px 30px rgb(0 0 0 / 35%);
+}
+.composer .reasoning-menu button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 10px;
+  color: #f2f4fa;
+  background: transparent;
+  border-radius: 7px;
+  text-align: left;
+  font-weight: 600;
+}
+.composer .reasoning-menu button:hover,
+.composer .reasoning-menu button:focus-visible,
+.composer .reasoning-menu button.selected {
+  color: #fff;
+  background: #5865f2;
+  outline: none;
+}
 button:disabled,
 textarea:disabled {
   cursor: not-allowed;

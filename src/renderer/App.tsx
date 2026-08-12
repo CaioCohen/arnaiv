@@ -171,7 +171,7 @@ function ElectronApp({ api }: { api: typeof window.arnAIv }): JSX.Element {
       );
     }
   };
-  const send = async (content: string): Promise<void> => {
+  const send = async (content: string, reasoningEffort: 'low' | 'medium' | 'high'): Promise<void> => {
     setError("");
     setGenerating(true);
     try {
@@ -188,7 +188,7 @@ function ElectronApp({ api }: { api: typeof window.arnAIv }): JSX.Element {
           },
         ],
       });
-      await api.chat.send({ sessionId: activeSession.id, content });
+      await api.chat.send({ sessionId: activeSession.id, content, reasoningEffort });
     } catch (reason: unknown) {
       setGenerating(false);
       setError(
@@ -227,7 +227,7 @@ function ElectronApp({ api }: { api: typeof window.arnAIv }): JSX.Element {
             disabled={generating}
             focusRequest={composerFocusRequest}
             onFocus={prepareComposer}
-            onSend={(content) => void send(content)}
+            onSend={(content, reasoningEffort) => void send(content, reasoningEffort)}
           />
         </section>
       </main>

@@ -20,9 +20,12 @@ export interface SessionSummary {
   title: string;
 }
 
+export type ReasoningEffort = 'low' | 'medium' | 'high';
+
 export interface ChatSendRequest {
   sessionId: string;
   content: string;
+  reasoningEffort: ReasoningEffort;
 }
 
 export interface StreamEvent {

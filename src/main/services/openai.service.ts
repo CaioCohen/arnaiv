@@ -1,18 +1,21 @@
-import OpenAI from 'openai';
-import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
-import { DEFAULT_MODEL } from '../../shared/constants.js';
-import type { ChatMessage } from '../../shared/types.js';
+import OpenAI from "openai";
+import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
+import { DEFAULT_MODEL } from "../../shared/constants.js";
+import type { ChatMessage, ReasoningEffort } from "../../shared/types.js";
 
 export interface ChatRequest {
   messages: ChatMessage[];
   systemPrompt?: string;
   model?: string;
+  reasoningEffort?: ReasoningEffort;
 }
 
 export interface OpenAIClient {
   chat: {
     completions: {
-      create: (request: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming) => Promise<AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>>;
+      create: (
+        request: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming,
+      ) => Promise<AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>>;
     };
   };
 }
@@ -20,19 +23,25 @@ export interface OpenAIClient {
 export class OpenAIService {
   public constructor(private readonly client: OpenAIClient) {}
 
-  public async stream(request: ChatRequest, onChunk: (content: string) => void): Promise<void> {
+  public async stream(
+    request: ChatRequest,
+    onChunk: (content: string) => void,
+  ): Promise<void> {
     const messages: ChatCompletionMessageParam[] = [];
 
     if (request.systemPrompt) {
-      messages.push({ role: 'system', content: request.systemPrompt });
+      messages.push({ role: "system", content: request.systemPrompt });
     }
 
     messages.push(
       ...request.messages
-        .filter((message) => message.role !== 'system')
+        .filter((message) => message.role !== "system")
         .map(
           (message) =>
-            ({ role: message.role, content: message.content }) as ChatCompletionMessageParam,
+            ({
+              role: message.role,
+              content: message.content,
+            }) as ChatCompletionMessageParam,
         ),
     );
 
@@ -40,6 +49,7 @@ export class OpenAIService {
       model: request.model ?? DEFAULT_MODEL,
       messages,
       stream: true,
+      reasoning_effort: request.reasoningEffort ?? "medium",
     });
 
     for await (const chunk of stream) {
