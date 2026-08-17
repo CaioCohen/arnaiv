@@ -1,4 +1,5 @@
 export type MessageRole = 'system' | 'user' | 'assistant';
+export type AgentId = 'medical-consultant';
 
 export interface ChatMessage {
   id: string;
@@ -15,12 +16,19 @@ export interface ChatSession {
   createdAt: string;
   updatedAt: string;
   messages: ChatMessage[];
+  agentId?: AgentId;
 }
 
 export interface SessionSummary {
   id: string;
   updatedAt: string;
   title: string;
+  agentId?: AgentId;
+}
+
+export interface AgentSummary {
+  id: AgentId;
+  name: string;
 }
 
 export type ReasoningEffort = 'low' | 'medium' | 'high';
@@ -42,8 +50,11 @@ export interface ArnAIvApi {
   sessions: {
     list: () => Promise<SessionSummary[]>;
     get: (id: string) => Promise<ChatSession | null>;
-    create: () => Promise<ChatSession>;
+    create: (agentId?: AgentId) => Promise<ChatSession>;
     delete: (id: string) => Promise<void>;
+  };
+  agents: {
+    list: () => Promise<AgentSummary[]>;
   };
   chat: {
     send: (request: ChatSendRequest) => Promise<void>;

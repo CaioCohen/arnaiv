@@ -70,6 +70,21 @@ describe('OpenAIService', () => {
     }));
   });
 
+  it('places retrieved reference data after the system prompt without persisting it in messages', async () => {
+    const create = vi.fn().mockResolvedValue((async function* () {})());
+    const service = new OpenAIService({ chat: { completions: { create } } });
+
+    await service.stream({ messages, systemPrompt: 'Use safe references.', referenceContext: 'Answer using this reference:\n[Source: care.txt]\nData' }, () => undefined);
+
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({
+      messages: [
+        { role: 'system', content: 'Use safe references.' },
+        { role: 'user', content: 'Answer using this reference:\n[Source: care.txt]\nData' },
+        { role: 'user', content: 'Hello' },
+      ],
+    }));
+  });
+
   it('creates a non-streaming summary and rejects an empty response', async () => {
     const create = vi.fn().mockResolvedValue({ choices: [{ message: { content: 'Concise summary' } }] });
     const service = new OpenAIService({ chat: { completions: { create } } });
@@ -81,5 +96,13 @@ describe('OpenAIService', () => {
       chat: { completions: { create: vi.fn().mockResolvedValue({ choices: [{ message: { content: ' ' } }] }) } },
     });
     await expect(empty.summarize(messages)).rejects.toThrow('empty conversation summary');
+  });
+
+  it('batches document embeddings in one OpenAI request', async () => {
+    const create = vi.fn().mockResolvedValue({ data: [{ embedding: [1, 0] }, { embedding: [0, 1] }] });
+    const service = new OpenAIService({ chat: { completions: { create: vi.fn() } }, embeddings: { create } });
+
+    await expect(service.embedMany(['first', 'second'])).resolves.toEqual([[1, 0], [0, 1]]);
+    expect(create).toHaveBeenCalledWith({ model: 'text-embedding-3-small', input: ['first', 'second'] });
   });
 });

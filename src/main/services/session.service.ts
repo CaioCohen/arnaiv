@@ -1,7 +1,8 @@
 import { mkdir, readFile, readdir, rename, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
-import type { ChatMessage, ChatSession, SessionSummary } from '../../shared/types.js';
+import type { AgentId, ChatMessage, ChatSession, SessionSummary } from '../../shared/types.js';
+import { isAgentId } from './agent-registry.service.js';
 
 export class SessionError extends Error {
   constructor(message: string) {
@@ -32,9 +33,9 @@ export class SessionService {
     await mkdir(this.directory, { recursive: true });
   }
 
-  public async createSession(): Promise<ChatSession> {
+  public async createSession(agentId?: AgentId): Promise<ChatSession> {
     const now = new Date().toISOString();
-    const session = { id: randomUUID(), createdAt: now, updatedAt: now, messages: [] };
+    const session: ChatSession = { id: randomUUID(), createdAt: now, updatedAt: now, messages: [], ...(agentId ? { agentId } : {}) };
 
     await this.saveSession(session);
     return session;
@@ -67,6 +68,7 @@ export class SessionService {
         title:
           session.messages.find((message) => message.role === 'user')?.content.replace(/\s+/g, ' ').trim() ||
           'New chat',
+        ...(session.agentId ? { agentId: session.agentId } : {}),
       }));
   }
 
@@ -132,6 +134,10 @@ export class SessionService {
       )
     ) {
       throw new SessionError('Conversation messages are invalid.');
+    }
+
+    if (session.agentId !== undefined && !isAgentId(session.agentId)) {
+      throw new SessionError('Conversation data is invalid.');
     }
 
     return session as ChatSession;

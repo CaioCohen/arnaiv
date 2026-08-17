@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import type { ArnAIvApi, ChatSendRequest, StreamEvent } from '../shared/types.js';
+import type { AgentId, ArnAIvApi, ChatSendRequest, StreamEvent } from '../shared/types.js';
 
 function listen(
   channel: 'chat:chunk' | 'chat:complete' | 'chat:error',
@@ -14,8 +14,11 @@ const api: ArnAIvApi = {
   sessions: {
     list: () => ipcRenderer.invoke('sessions:list'),
     get: (id) => ipcRenderer.invoke('sessions:get', id),
-    create: () => ipcRenderer.invoke('sessions:create'),
+    create: (agentId?: AgentId) => ipcRenderer.invoke('sessions:create', agentId),
     delete: (id) => ipcRenderer.invoke('sessions:delete', id),
+  },
+  agents: {
+    list: () => ipcRenderer.invoke('agents:list'),
   },
   chat: {
     send: (request: ChatSendRequest) => ipcRenderer.invoke('chat:send', request),

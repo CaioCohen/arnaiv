@@ -6,6 +6,7 @@ import type { ChatMessage, ReasoningEffort } from "../../shared/types.js";
 export interface ChatRequest {
   messages: ChatMessage[];
   systemPrompt?: string;
+  referenceContext?: string;
   model?: string;
   reasoningEffort?: ReasoningEffort;
 }
@@ -21,6 +22,9 @@ export interface OpenAIClient {
       >;
     };
   };
+  embeddings?: {
+    create: (request: { model: string; input: string | string[] }) => Promise<{ data: Array<{ embedding: number[] }> }>;
+  };
 }
 
 export class OpenAIService {
@@ -34,6 +38,10 @@ export class OpenAIService {
 
     if (request.systemPrompt) {
       messages.push({ role: "system", content: request.systemPrompt });
+    }
+
+    if (request.referenceContext) {
+      messages.push({ role: 'user', content: request.referenceContext });
     }
 
     const summary = request.messages.find(
@@ -109,5 +117,22 @@ export class OpenAIService {
     }
 
     return content;
+  }
+
+  public async embed(input: string): Promise<number[]> {
+    const embedding = (await this.embedMany([input]))[0];
+    if (!embedding) throw new Error('OpenAI returned an empty embedding.');
+    return embedding;
+  }
+
+  public async embedMany(inputs: string[]): Promise<number[][]> {
+    if (!inputs.length) return [];
+    if (!this.client.embeddings) throw new Error('OpenAI embeddings are unavailable.');
+    const response = await this.client.embeddings.create({ model: 'text-embedding-3-small', input: inputs });
+    const embeddings = response.data.map((item) => item.embedding);
+    if (embeddings.length !== inputs.length || embeddings.some((embedding) => !embedding.length)) {
+      throw new Error('OpenAI returned an incomplete embedding batch.');
+    }
+    return embeddings;
   }
 }

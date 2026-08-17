@@ -52,6 +52,24 @@ button {
 .new-chat:hover {
   background: #323541;
 }
+.agents-button,
+.back-to-chats,
+.agent {
+  padding: 11px;
+  background: #22242d;
+  text-align: left;
+  font-weight: 600;
+}
+.agents-button:hover,
+.back-to-chats:hover,
+.agent:hover {
+  background: #323541;
+}
+.agent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 .sessions {
   min-height: 0;
   flex: 1;
@@ -81,6 +99,18 @@ button {
   text-overflow: ellipsis;
   white-space: nowrap;
   color: #c9cbd5;
+}
+.session-title,
+.session-agent {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.session-agent {
+  margin-top: 3px;
+  color: #969aaa;
+  font-size: 11px;
 }
 .session-row.active .session {
   color: #fff;
@@ -402,6 +432,20 @@ textarea:disabled {
     content: "＋";
     font-size: 20px;
   }
+  .agents-button,
+  .back-to-chats,
+  .agent {
+    font-size: 0;
+    text-align: center;
+  }
+  .agents-button::after {
+    content: "A";
+    font-size: 16px;
+  }
+  .back-to-chats::after {
+    content: "←";
+    font-size: 20px;
+  }
   .session {
     font-size: 0;
     padding: 13px;
@@ -409,6 +453,9 @@ textarea:disabled {
   .session::before {
     content: "•";
     font-size: 18px;
+  }
+  .session-agent {
+    display: none;
   }
   .delete-session {
     display: none;

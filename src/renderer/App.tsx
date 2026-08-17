@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import mainIcon from "../assets/main-icon.png";
-import type { ChatMessage, ChatSession, SessionSummary } from "../shared/types";
+import type { AgentId, AgentSummary, ChatMessage, ChatSession, SessionSummary } from "../shared/types";
 import { ChatInput } from "./components/ChatInput";
 import { ContextWindowMeter } from "./components/ContextWindowMeter";
 import { Messages } from "./components/Messages";
@@ -58,19 +58,20 @@ function DeleteDialog({ onCancel, onConfirm }: DeleteDialogProps): JSX.Element {
 
 function ElectronApp({ api }: { api: typeof window.arnAIv }): JSX.Element {
   const [items, setItems] = useState<SessionSummary[]>([]);
+  const [agents, setAgents] = useState<AgentSummary[]>([]);
+  const [agentPanel, setAgentPanel] = useState(false);
   const [session, setSession] = useState<ChatSession | null>(null);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [composerFocusRequest, setComposerFocusRequest] = useState(0);
   const pendingSession = useRef<Promise<ChatSession> | null>(null);
-  const refresh = async (): Promise<void> =>
-    setItems(await api.sessions.list());
-  const ensureSession = async (): Promise<ChatSession> => {
+  const refresh = async (): Promise<void> => setItems(await api.sessions.list());
+  const ensureSession = async (agentId?: AgentId): Promise<ChatSession> => {
     if (session) return session;
     if (!pendingSession.current)
       pendingSession.current = api.sessions
-        .create()
+        .create(agentId)
         .then(async (created) => {
           setSession(created);
           await refresh();
@@ -82,9 +83,7 @@ function ElectronApp({ api }: { api: typeof window.arnAIv }): JSX.Element {
     return pendingSession.current;
   };
   useEffect(() => {
-    void refresh().catch(() =>
-      setError("Unable to load previous conversations."),
-    );
+    void Promise.all([refresh(), api.agents.list().then(setAgents)]).catch(() => setError("Unable to load previous conversations."));
     const offChunk = api.chat.onChunk((event) => {
       setSession((current) => {
         if (!current || current.id !== event.sessionId) return current;
@@ -132,12 +131,22 @@ function ElectronApp({ api }: { api: typeof window.arnAIv }): JSX.Element {
   const select = async (id: string): Promise<void> => {
     if (generating) return;
     const loaded = await api.sessions.get(id);
-    if (loaded) setSession(loaded);
+    if (loaded) {
+      setSession(loaded);
+      setAgentPanel(false);
+    }
   };
   const create = async (): Promise<void> => {
     if (generating) return;
     setError("");
     setSession(await api.sessions.create());
+    await refresh();
+  };
+  const createAgent = async (agentId: AgentId): Promise<void> => {
+    if (generating) return;
+    setError("");
+    setSession(await api.sessions.create(agentId));
+    setAgentPanel(false);
     await refresh();
   };
   const prepareComposer = (): void => {
@@ -204,15 +213,21 @@ function ElectronApp({ api }: { api: typeof window.arnAIv }): JSX.Element {
     <>
       <main>
         <Sidebar
+          agents={agents}
+          agentPanel={agentPanel}
           items={items}
           active={session?.id ?? null}
+          disabled={generating}
+          onAgents={() => setAgentPanel(true)}
+          onBack={() => setAgentPanel(false)}
           onNew={() => void create()}
           onSelect={(id) => void select(id)}
+          onSelectAgent={(id) => void createAgent(id)}
           onDelete={requestDelete}
         />
         <section className="chat">
           <header>
-            <span>{generating ? "ArnAIv is generating…" : "ArnAIv"}</span>
+            <span>{generating ? "ArnAIv is generating…" : session?.agentId === 'medical-consultant' ? "Medical consultant" : "ArnAIv"}</span>
           </header>
           <div className="chat-body">
             {error && (
