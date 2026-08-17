@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import mainIcon from "../assets/main-icon.png";
 import type { ChatMessage, ChatSession, SessionSummary } from "../shared/types";
 import { ChatInput } from "./components/ChatInput";
+import { ContextWindowMeter } from "./components/ContextWindowMeter";
 import { Messages } from "./components/Messages";
 import { Sidebar } from "./components/Sidebar";
 
@@ -111,9 +112,12 @@ function ElectronApp({ api }: { api: typeof window.arnAIv }): JSX.Element {
         return { ...current, messages };
       });
     });
-    const offComplete = api.chat.onComplete(() => {
+    const offComplete = api.chat.onComplete((event) => {
       setGenerating(false);
       void refresh();
+      void api.sessions.get(event.sessionId).then((loaded) => {
+        if (loaded) setSession((current) => current?.id === loaded.id ? loaded : current);
+      });
     });
     const offError = api.chat.onError((event) => {
       setGenerating(false);
@@ -210,25 +214,30 @@ function ElectronApp({ api }: { api: typeof window.arnAIv }): JSX.Element {
           <header>
             <span>{generating ? "ArnAIv is generating…" : "ArnAIv"}</span>
           </header>
-          {error && (
-            <div className="error" role="alert">
-              {error}
-            </div>
-          )}
-          {session?.messages.length ? (
-            <Messages messages={session.messages} generating={generating} />
-          ) : (
-            <div className="empty">
-              <span>ArnAIv</span>
-              <img className="empty-icon" src={mainIcon} alt="ArnAIv logo" />
-            </div>
-          )}
-          <ChatInput
-            disabled={generating}
-            focusRequest={composerFocusRequest}
-            onFocus={prepareComposer}
-            onSend={(content, reasoningEffort) => void send(content, reasoningEffort)}
-          />
+          <div className="chat-body">
+            {error && (
+              <div className="error" role="alert">
+                {error}
+              </div>
+            )}
+            {session?.messages.length ? (
+              <Messages messages={session.messages} generating={generating} />
+            ) : (
+              <div className="empty">
+                <span>ArnAIv</span>
+                <img className="empty-icon" src={mainIcon} alt="ArnAIv logo" />
+              </div>
+            )}
+          </div>
+          <div className="chat-footer">
+            <ContextWindowMeter messages={session?.messages ?? []} />
+            <ChatInput
+              disabled={generating}
+              focusRequest={composerFocusRequest}
+              onFocus={prepareComposer}
+              onSend={(content, reasoningEffort) => void send(content, reasoningEffort)}
+            />
+          </div>
         </section>
       </main>
       {deletingId && (

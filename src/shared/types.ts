@@ -5,6 +5,9 @@ export interface ChatMessage {
   role: MessageRole;
   content: string;
   createdAt: string;
+  inactive?: boolean;
+  hidden?: boolean;
+  isContextSummary?: true;
 }
 
 export interface ChatSession {

@@ -26,7 +26,7 @@ export function Messages({ messages, generating }: MessagesProps): JSX.Element {
 
   return (
     <div className="messages" ref={container} onScroll={updateFollowLatest}>
-      {messages.map((message) => (
+      {messages.filter((message) => !message.hidden).map((message) => (
         <article className={`message ${message.role}`} key={message.id}>
           <div className="role">{message.role === 'user' ? 'You' : 'ArnAIv'}</div>
           <div className="content">

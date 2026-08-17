@@ -100,7 +100,7 @@ button {
 .chat {
   min-width: 0;
   display: grid;
-  grid-template-rows: 58px 1fr auto;
+  grid-template-rows: 58px minmax(0, 1fr) auto;
 }
 header {
   display: flex;
@@ -108,6 +108,68 @@ header {
   padding: 0 32px;
   font-weight: 650;
   border-bottom: 1px solid #272934;
+}
+.context-window-meter {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  padding: 0 32px;
+  background: #101116;
+}
+.context-window-meter:focus {
+  outline: none;
+}
+.context-window-meter:focus-visible progress {
+  outline: 1px solid #8790ad;
+  outline-offset: 2px;
+}
+.context-window-meter progress {
+  width: 100%;
+  height: 3px;
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.context-window-meter progress::-webkit-progress-bar {
+  background: #2b2d38;
+}
+.context-window-meter progress::-webkit-progress-value {
+  background: #5865f2;
+}
+.context-window-meter progress::-moz-progress-bar {
+  background: #5865f2;
+}
+.context-window-tooltip {
+  position: absolute;
+  right: 32px;
+  bottom: calc(100% + 7px);
+  z-index: 1;
+  padding: 6px 9px;
+  color: #e8eaf0;
+  background: #252733;
+  border: 1px solid #3b3e4c;
+  border-radius: 6px;
+  font-size: 12px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(3px);
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+.context-window-meter:hover .context-window-tooltip,
+.context-window-meter:focus .context-window-tooltip {
+  opacity: 1;
+  transform: translateY(0);
+}
+.chat-body {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.chat-body .messages,
+.chat-body .empty {
+  min-height: 0;
+  flex: 1;
 }
 .empty {
   display: grid;

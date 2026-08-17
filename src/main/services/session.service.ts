@@ -123,7 +123,12 @@ export class SessionService {
           typeof message.id === 'string' &&
           ['system', 'user', 'assistant'].includes(message.role) &&
           typeof message.content === 'string' &&
-          typeof message.createdAt === 'string',
+          typeof message.createdAt === 'string' &&
+          (message.inactive === undefined || typeof message.inactive === 'boolean') &&
+          (message.hidden === undefined || typeof message.hidden === 'boolean') &&
+          (message.isContextSummary === undefined || message.isContextSummary === true) &&
+          (!message.hidden || message.isContextSummary === true) &&
+          (message.isContextSummary !== true || (message.hidden === true && message.role === 'system')),
       )
     ) {
       throw new SessionError('Conversation messages are invalid.');

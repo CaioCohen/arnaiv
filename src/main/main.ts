@@ -5,6 +5,8 @@ import dotenv from "dotenv";
 import OpenAI from "openai";
 import { DEFAULT_SYSTEM_PROMPT } from "../shared/constants.js";
 import type { ChatSendRequest, ReasoningEffort } from "../shared/types.js";
+import { ChatCompletionService } from "./services/chat-completion.service.js";
+import { ContextSummarizerService } from "./services/context-summarizer.service.js";
 import { OpenAIService } from "./services/openai.service.js";
 import { SessionService } from "./services/session.service.js";
 
@@ -96,8 +98,12 @@ function registerIpc(): void {
             });
           },
         );
-        session.messages.push(assistant);
-        await sessions.saveSession(session);
+        await new ChatCompletionService(
+          sessions,
+          new ContextSummarizerService(service),
+          (sessionId, summaryError) =>
+            console.error(`Unable to summarize conversation context for session ${sessionId}.`, summaryError),
+        ).persistAssistantResponse(session, assistant);
         event.sender.send("chat:complete", {
           sessionId: session.id,
           messageId: assistant.id,
