@@ -35,10 +35,7 @@ export class SessionService {
 
   public async createSession(agentId?: AgentId): Promise<ChatSession> {
     const now = new Date().toISOString();
-    const session: ChatSession = { id: randomUUID(), createdAt: now, updatedAt: now, messages: [], ...(agentId ? { agentId } : {}) };
-
-    await this.saveSession(session);
-    return session;
+    return { id: randomUUID(), createdAt: now, updatedAt: now, messages: [], ...(agentId ? { agentId } : {}) };
   }
 
   public async getSession(id: string): Promise<ChatSession | null> {
@@ -60,7 +57,7 @@ export class SessionService {
     const files = (await readdir(this.directory)).filter((name) => name.endsWith('.json'));
     const sessions = await Promise.all(files.map(async (name) => this.getSession(name.slice(0, -5)).catch(() => null)));
     return sessions
-      .filter((item): item is ChatSession => item !== null)
+      .filter((item): item is ChatSession => item !== null && item.messages.length > 0)
       .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
       .map((session) => ({
         id: session.id,
